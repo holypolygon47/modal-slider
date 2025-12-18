@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>модальное окно и слайдер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal {
+            background-color: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            line-height: 1;
+            padding: 5px;
+        }
+        
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+        
+        /* Стили для слайдера */
+        .slider-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .slider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .slide {
+            min-width: 100%;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .slide-1 { background: linear-gradient(to right, #ff7e5f, #feb47b); }
+        .slide-2 { background: linear-gradient(to right, #2193b0, #6dd5ed); }
+        .slide-3 { background: linear-gradient(to right, #cc2b5e, #753a88); }
+        .slide-4 { background: linear-gradient(to right, #42275a, #734b6d); }
+        .slide-5 { background: linear-gradient(to right, #2c3e50, #4ca1af); }
+        
+        .slider-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .slider-btn {
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .slider-btn:hover {
+            background-color: #1a252f;
+        }
+        
+        .slider-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #bdc3c7;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .dot.active {
+            background-color: #3498db;
+        }
+        
+        .slide-number {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #7f8c8d;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .slide {
+                height: 300px;
+                font-size: 1.2rem;
+            }
+            
+            .buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Сайт с двумя(!!) нереальными модальными окнами и слайдером(одним, зато с пятью слайдами)</h1>
+        <p>реализация без библиотек</p>
+    </header>
+    
+    <div class="container">
+        <section class="section">
+            <h2>Модальное окно</h2>
+            <p>Нажмите на кнопку ниже, чтобы открыть модальное окно.</p>
+            <div class="buttons">
+                <button class="btn" id="openModalBtn">Открыть модальное окно</button>
+                <button class="btn" id="openModalBtn2">Открыть второе модальное окно</button>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>Слайдер изображений</h2>
+            <p>Простой слайдер с 5 слайдами. Используйте кнопки для навигации или кликните на точки под слайдером.</p>
+            
+            <div class="slider-container">
+                <div class="slider" id="slider">
+                    <div class="slide slide-1">
+                        <h3>Слайд 1</h3>
+                        <p>Теплые цвета оранжевого градиента</p>
+                    </div>
+                    <div class="slide slide-2">
+                        <h3>Слайд 2</h3>
+                        <p>Прохладные сине-голубые тона</p>
+                    </div>
+                    <div class="slide slide-3">
+                        <h3>Слайд 3</h3>
+                        <p>Яркий розово-фиолетовый градиент</p>
+                    </div>
+                    <div class="slide slide-4">
+                        <h3>Слайд 4</h3>
+                        <p>Темный фиолетовый градиент</p>
+                    </div>
+                    <div class="slide slide-5">
+                        <h3>Слайд 5</h3>
+                        <p>Сине-серый градиент</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="slider-controls">
+                <button class="slider-btn" id="prevBtn">Предыдущий</button>
+                <button class="slider-btn" id="nextBtn">Следующий</button>
+            </div>
+            
+            <div class="slider-dots" id="sliderDots">
+            </div>
+            
+            <div class="slide-number">
+                Текущий слайд: <span id="currentSlide">1</span> из <span id="totalSlides">5</span>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <h2>Простое модальное окно</h2>
+            <p>Это пример базового модального окна, созданного без использования библиотек.</p>
+            <p>Оно появляется поверх основного содержимого и блокирует взаимодействие с ним.</p>
+            <p>Вы можете закрыть это окно, нажав на крестик в правом верхнем углу или кликнув вне окна.</p>
+            <div style="margin-top: 20px;">
+                <button class="btn" id="closeModalBtn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2025 очень крутой сайт с модальным окном и слайдером. без библиотек.</p>
+    </footer>
+    
+    <script>
+        // Код для модального окна
+        const modalOverlay = document.getElementById('modalOverlay');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const openModalBtn2 = document.getElementById('openModalBtn2');
+        const modalClose = document.getElementById('modalClose');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        // Открытие модального окна
+        openModalBtn.addEventListener('click', () => {
+            modalOverlay.style.display = 'flex';
+        });
+        
+        openModalBtn2.addEventListener('click', () => {
+            modalOverlay.style.display = 'flex';
+        });
+        
+        // Закрытие модального окна
+        const closeModal = () => {
+            modalOverlay.style.display = 'none';
+        };
+        
+        modalClose.addEventListener('click', closeModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        
+        // Закрытие при клике вне модального окна
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+        
+        // Код для слайдера
+        const slider = document.getElementById('slider');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentSlideElement = document.getElementById('currentSlide');
+        const totalSlidesElement = document.getElementById('totalSlides');
+        const sliderDots = document.getElementById('sliderDots');
+        
+        let currentSlide = 0;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        
+        // Инициализация слайдера
+        totalSlidesElement.textContent = totalSlides;
+        
+        // Создание точек для навигации
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (i === 0) dot.classList.add('active');
+            
+            dot.addEventListener('click', () => {
+                goToSlide(i);
+            });
+            
+            sliderDots.appendChild(dot);
+        }
+        
+        // Обновление отображения слайдера
+        const updateSlider = () => {
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+            currentSlideElement.textContent = currentSlide + 1;
+            
+            // Обновление активной точки
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                if (index === currentSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        };
+        
+        // Переход к конкретному слайду
+        const goToSlide = (slideIndex) => {
+            currentSlide = slideIndex;
+            if (currentSlide < 0) currentSlide = totalSlides - 1;
+            if (currentSlide >= totalSlides) currentSlide = 0;
+            updateSlider();
+        };
+        
+        // Переход к следующему слайду
+        const nextSlide = () => {
+            goToSlide(currentSlide + 1);
+        };
+        
+        // Переход к предыдущему слайду
+        const prevSlide = () => {
+            goToSlide(currentSlide - 1);
+        };
+        
+        // Обработчики событий для кнопок слайдера
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        
+        // Автопереключение слайдов каждые 5 секунд
+        let slideInterval = setInterval(nextSlide, 5000);
+        
+        // Остановка автопереключения при наведении на слайдер
+        sliderContainer = document.querySelector('.slider-container');
+        sliderContainer.addEventListener('mouseenter', () => {
+            clearInterval(slideInterval);
+        });
+        
+        // Возобновление автопереключения при уходе курсора
+        sliderContainer.addEventListener('mouseleave', () => {
+            slideInterval = setInterval(nextSlide, 5000);
+        });
+        
+        // Инициализация слайдера
+        updateSlider();
+    </script>
+</body>
+</html>
